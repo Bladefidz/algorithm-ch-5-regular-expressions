@@ -4,12 +4,14 @@ Regular Expressions stand on the language automaton and formal languages. The id
 
 Similar to arithmetic symbol in mathematic, we can define such similar pattern in the languages as **syntax**. Table below give four patterns with examples:
 
+**or = \|**
+
 | Name | Notation | Match |
 | --- | --- | --- |
 | Concatenation | {A B} | AB |
-| Or | A \| B | A, B |
+| Or | A or B | A, B |
 | Closure | AB\* | A, AB, ABBB |
-| Parentheses | C \(AC \| B\) D | CACD, CBD |
+| Parentheses | C \(AC or B\) D | CACD, CBD |
 
 Table 1: Language patterns
 
