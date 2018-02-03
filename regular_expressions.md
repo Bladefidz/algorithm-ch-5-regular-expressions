@@ -7,9 +7,9 @@ Similar to arithmetic symbol in mathematic, we can define such similar pattern i
 | Name | Notation | Match |
 | --- | --- | --- |
 | Concatenation | {A B} | AB |
-| Or | A | B | A, B |
+| Or | A \| B | A, B |
 | Closure | AB* | A, AB, ABBB |
-| Parentheses | C (AC | B) D | CACD, CBD |
+| Parentheses | C (AC \| B) D | CACD, CBD |
 
 Table 1: Language patterns
 
@@ -19,12 +19,12 @@ Another important feature of language is **shortcut** expression. Using a certai
 | --- | --- | --- | --- | --- |
 | Wildcard | . | A . B |  |  |
 | Specified Set | _Enclosed in_ [] | [AEIOU]* |  |  |
-| Range | Enclosed in [] | [A-Z] |  |  |
-| Complement | _Enclosed in_ [] | [^AEIOU]* |  |  |
+| Range | _Enclosed in_ [] _separated by_ - | [A-Z] |  |  |
+| Complement | _Enclosed in_ [] _separated by_ ^ | \[^AEIOU\]* |  |  |
 | At least 1 | + | (AB)+ | (AB)(AB)* | AB ABABAB |
-| O or 1 | ? | (AB)? | ‘any’ | AB | ‘any’AB |
+| O or 1 | ? | (AB)? | ‘any’ \| AB | ‘any’ AB |
 | Specific | Count in {} | (AB){3} | (AB)(AB)(AB) | ABABAB |
-| Range | Range in {} | (AB){1-2} | (AB) | (AB)(AB) | AB ABAB |
+| Range | Range in {} | (AB){1-2} | (AB) \| (AB)(AB) | AB ABAB |
 
 Table 2: Shortcut expression
 
@@ -38,7 +38,7 @@ Building an NFA corresponding to an RE is similar to constructing arithmetic exp
 
 The basic NFA construction consist a digraph G and _epsilon_-transition (transition in edge without scanning text). Below the description of basic rule to construct NFA for RE:
 
-*   **C****oncatenation** is every match transition.
+*   **Concatenation** is every match transition.
 
     ![](assets/image1.png)
 
@@ -60,117 +60,77 @@ An image below illustrated a full NFA of RE _(.*AB((C|D*E)F)*G)_
 
 Below the implementation of NFA of RE in java:
 
-1.  public class NFA
+```
+public class NFA
+{
+	private char[] re;		// Match transitions
+	private Digraph G;		// Epsilon transitions
+	private int M;			// Number of states
 
-2.  {
+	public NFA(String regexp)
+	{
+		Stack<Integer> ops = new Stack<Integer>();
+		re = regexp.toCharArray();
+		M = re.length;
+		G = new Digraph(M+1);
 
-3.  private char[] re;// Match transitions
+		for (int i = 0; i < M; i++) {
+			int lp = i;
 
-4.  private Digraph G;// Epsilon transitions
+			if (re[i] == '(' || re[i] == '|')
+				ops.push(i);
+			else if (re[i] == ')') {
+				int or = ops.pop();
+				if (re[or] == '|') {
+					lp = ops.pop();
+					G.addEdge(lp, or+1);
+					G.addEdge(or, i);
+				} else {
+					lp = or;
+				}
+			}
 
-5.  private int M;// Number of states
+			if (i < M-1 && re[i+1] == '*') {
+				G.addEdge(lp, i+1);
+				G.addEdge(i+1, lp);
+			}
 
-6.  public NFA(String regexp)
+			if (re[i] == '(' || re[i] == '*' || re[i] == ')')
+				G.addEdge(i, i+1);
+		}
+	}
 
-7.  {
+	public boolean recognizes(String txt)
+	{
+		Bag<Integer> pc = new Bag<Integer>();
+		DirectedDFS dfs = new DirectedDFS(G, 0);
 
-8.  Stack
+		for (int v = 0; v < G.V(); v++)
+			if (dfs.marked(v)) pc.add(v);
 
-    **Illegal HTML tag removed :** ops = new Stack<integer>();</integer>
+		for (int i = 0; i < txt.length(); i++) {
+			Bag<Integer> match = new Bag<Integer>();
 
-9.  re = regexp.toCharArray();
+			for (int v : pc)
+				if (v < M)
+					if (re[v] == txt.charAt(i) || re[v] == '.')
+						match.add(v+1);
 
-10.  M = re.length;
+			pc = new Bag<Integer>();
+			dfs = new DirectedDFS(G, match);
 
-11.  G = new Digraph(M+1);
+			for (int v = 0; v < G.V(); v++)
+				if (dfs.marked(v)) pc.add(v);
+		}
 
-12.  for (int i = 0; i &lt; M; i++) {
+		for (int v : pc)
+			if (v == M) return true;
 
-13.  int lp = i;
+		return false;
+	}
+}
+```
 
-14.  if (re[i] == &#039;(&#039; || re[i] == &#039;|&#039;)
-
-15.  ops.push(i);
-
-16.  else if (re[i] == &#039;)&#039;) {
-
-17.  int or = ops.pop();
-
-18.  if (re[or] == &#039;|&#039;) {
-
-19.  lp = ops.pop();
-
-20.  G.addEdge(lp, or+1);
-
-21.  G.addEdge(or, i);
-
-22.  } else {
-
-23.  lp = or;
-
-24.  }
-
-25.  }
-
-26.  if (i &lt; M-1 &amp;&amp; re[i+1] == &#039;*&#039;) {
-
-27.  G.addEdge(lp, i+1);
-
-28.  G.addEdge(i+1, lp);
-
-29.  }
-
-30.  if (re[i] == &#039;(&#039; || re[i] == &#039;*&#039; || re[i] == &#039;)&#039;)
-
-31.  G.addEdge(i, i+1);
-
-32.  }
-
-33.  }
-
-34.  public boolean recognizes(String txt)
-
-35.  {
-
-36.  Bag**Illegal HTML tag removed :** pc = new Bag<integer>();</integer>
-
-37.  DirectedDFS dfs = new DirectedDFS(G, 0);
-
-38.  for (int v = 0; v &lt; G.V(); v++)
-
-39.  if (dfs.marked(v)) pc.add(v);
-
-40.  for (int i = 0; i &lt; txt.length(); i++) {
-
-41.  Bag**Illegal HTML tag removed :** match = new Bag<integer>();</integer>
-
-42.  for (int v : pc)
-
-43.  if (v &lt; M)
-
-44.  if (re[v] == txt.charAt(i) || re[v] == &#039;.&#039;)
-
-45.  match.add(v+1);
-
-46.  pc = new Bag**Illegal HTML tag removed :** ();
-
-47.  dfs = new DirectedDFS(G, match);
-
-48.  for (int v = 0; v &lt; G.V(); v++)
-
-49.  if (dfs.marked(v)) pc.add(v);
-
-50.  }
-
-51.  for (int v : pc)
-
-52.  if (v == M) return true;
-
-53.  return false;
-
-54.  }
-
-55.  }
 
 The critical transition of constructing NFA is when we dealing with right parenthesis. Similar to Djikstra two-stack, we need to store every meta character “*, |, (” into stack. When hit right parenthesis character ‘)’, we popped out item in the stack, but if popped out character is ‘|’, we need extra handling to do _or_ _operation_ which is has two _epsilon_-transition.
 
