@@ -17,16 +17,18 @@ Table 1: Language patterns
 
 Another important feature of language is **shortcut** expression. Using a certain shortcut can save us from being type unnecessary long expression. Table below give example of shortcuts:
 
+**or = \|**
+
 | Name | Notation | Example | Shortcut for | Match |
 | --- | --- | --- | --- | --- |
 | Wildcard | . | A . B |  |  |
 | Specified Set | _Enclosed in_ \[\] | \[AEIOU\]\* |  |  |
 | Range | _Enclosed in_ \[\] _separated by_ - | \[A-Z\] |  |  |
-| Complement | _Enclosed in_ \[\] _separated by_ ^ | \[^AEIOU\]\* |  |  |
+| Complement | _Enclosed in_ \[\] _separated by_ ^ | \[^AE or OU\]\* |  |  |
 | At least 1 | + | \(AB\)+ | \(AB\)\(AB\)\* | AB ABABAB |
-| O or 1 | ? | \(AB\)? | ‘any’ \| AB | ‘any’ AB |
+| O or 1 | ? | \(AB\)? | ‘any’ or AB | ‘any’ AB |
 | Specific | Count in {} | \(AB\){3} | \(AB\)\(AB\)\(AB\) | ABABAB |
-| Range | Range in {} | \(AB\){1-2} | \(AB\) \| \(AB\)\(AB\) | AB ABAB |
+| Range | Range in {} | \(AB\){1-2} | \(AB\) or \(AB\)\(AB\) | AB ABAB |
 
 Table 2: Shortcut expression
 
